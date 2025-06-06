@@ -1,4 +1,4 @@
-proc simulate(project_name, top_module, tb_module){
+proc run_simulation {project_name top_module tb_module} {
 
     file delete -force $project_name.xpr *.os *.jou *.log $project_name.srcs $project_name.cache $project_name.runs
 
@@ -8,7 +8,7 @@ proc simulate(project_name, top_module, tb_module){
     set tb_dir ./tests
     set sim_dir ./sim
 
-    create_project $project_name  -part $part -force
+    create_project $project_name -part $part -force
 
     if {[glob -nocomplain $src_dir/*.sv] != ""} {
         puts "Reading SV files..."
