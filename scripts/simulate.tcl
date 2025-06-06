@@ -30,6 +30,7 @@ proc run_simulation {project_name top_module tb_module} {
         add_files -fileset sim_1 [glob $tb_dir/*.v]
     }
 
+    puts $tb_module
     set_property top $tb_module [get_filesets sim_1]
     launch_simulation
 
