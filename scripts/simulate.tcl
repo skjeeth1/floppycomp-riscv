@@ -34,10 +34,7 @@ proc run_simulation {project_name top_module tb_module} {
     set_property top $tb_module [get_filesets sim_1]
     launch_simulation
 
-    save_wave_config $sim_dir/$project_name.wcfg
+    save_wave_config $sim_dir/$tb_module.wcfg
     start_gui
-
-# Optional: export waveform config layout
-# write_wave_config $sim_dir/my_wave.wcfg
-
+    
 }

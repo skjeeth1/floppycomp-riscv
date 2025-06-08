@@ -17,9 +17,14 @@ module alu_rtl (
             OP_ALU_OR: out <= rs1 | rs2;
             OP_ALU_AND: out <= rs1 & rs2;
             OP_ALU_XOR: out <= rs1 ^ rs2;
-            OP_ALU_SLT: out <= (rs1 < rs2) ? 'b1 : 'b0;
-            OP_ALU_SLTU: out <= ($signed(rs1) < $signed(rs2)) ? 'b1 : 'b0;
-            default: out = 'bz;
+            OP_ALU_SLTU: out <= (rs1 < rs2) ? 'b1 : 'b0;
+            OP_ALU_SLT: out <= ($signed(rs1) < $signed(rs2)) ? 'b1 : 'b0;
+
+            default: begin 
+                out = 'b0; 
+                $error("Invalid ALU op code %x",alu_op_code); 
+            end
+            
         endcase
     end
 
