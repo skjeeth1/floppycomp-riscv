@@ -1,13 +1,13 @@
 `include "params.sv"
 
 module alu_rtl (
-    input alu_op alu_op_code,
-    input logic [WORD_SIZE - 1:0] rs1,
-    input logic [WORD_SIZE - 1:0] rs2,
-    output logic [WORD_SIZE - 1:0] out
+    input alu_op_t alu_op_code,
+    input word rs1,
+    input word rs2,
+    output word out
 );
 
-    always_comb begin : alu_out
+    always_comb begin : ALU_IMP
         case (alu_op_code)
             OP_ALU_ADD: out = rs1 + rs2;
             OP_ALU_SUB: out = rs1 - rs2;
@@ -26,7 +26,22 @@ module alu_rtl (
             end
 
         endcase
-    end
+    end 
+endmodule
 
-    
+
+module alu_decoder (
+    input word rs1, rs2, imm, pc_val,
+    input alu_rs1_t alu_rs1,
+    input alu_rs2_t alu_rs2,
+
+    output word op1, op2
+);
+    always_comb begin : Assign_OP1
+        if (alu_rs1 == ALU_PC_OP) op1 = pc_val;
+        else op1 = rs1;
+
+        if (alu_rs2 == ALU_IMM_OP) op2 = imm;
+        else op2 = rs1;
+    end
 endmodule
