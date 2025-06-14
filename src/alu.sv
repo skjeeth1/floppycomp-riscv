@@ -26,6 +26,7 @@ module alu_unit (
         endcase
 
         case (alu_op_code)
+            NO_ALU_OP: out = imm;
             OP_ALU_ADD: out = rs1 + rs2;
             OP_ALU_SUB: out = rs1 - rs2;
             OP_ALU_SLL: out = rs1 << rs2[4:0];
