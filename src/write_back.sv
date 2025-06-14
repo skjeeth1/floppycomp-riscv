@@ -1,6 +1,6 @@
 `include "params.sv"
 
-module write_back_unit (
+module write_back_stage (
     input word pc_4,
     input word memory_out,
     input write_back_op_t write_back_ctrl,

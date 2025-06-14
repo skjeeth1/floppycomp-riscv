@@ -1,6 +1,6 @@
 `include "params.sv"
 
-module fetch_unit (
+module fetch_stage (
     input logic clock,
     input logic reset,
     input logic jmp_ctrl_signal,
