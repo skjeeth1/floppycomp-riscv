@@ -27,5 +27,9 @@ module instruction_memory (
     always_comb begin : Instruction_Mem
         instruction = memory[data_address[9:2]];
     end
+
+    initial begin
+        $readmemh("program.hex", memory);
+    end
     
 endmodule

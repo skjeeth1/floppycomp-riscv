@@ -6,15 +6,11 @@ module FloppyComp_V1 (
     input word data_in,
     input word inst_data,
 
-    output word data_out,
-    output word data_add,
     output word inst_add,
-    output mem_en_t data_mem_op,
-    output word data_mem_en
+    data_memory_interface_t data_mem_int
 );
 
     control_signals_t ctrl_sig;
-    data_memory_interface_t data_mem_int;
 
     word pc;
     word pc_4;
@@ -96,11 +92,5 @@ module FloppyComp_V1 (
         .rs2_data(rs2)
     );
 
-    always_comb begin : Assign_Data_Memory_Interface
-        data_out = data_mem_int.data_in;
-        data_add = data_mem_int.address;
-        data_mem_en = data_mem_int.mem_enable;
-        data_mem_op = data_mem_int.mem_en;
-    end
-    
+
 endmodule
