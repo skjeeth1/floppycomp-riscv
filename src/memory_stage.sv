@@ -1,9 +1,9 @@
 `include "params.sv"
 
-module write_unit (
+module memory_stage (
     input word alu_result,
     input word reg_data,
-    input mem_op_t mem_op,
+    input memory_op_t mem_op,
     input word mem_data_out,
 
     output data_memory_interface_t mem_sig,
