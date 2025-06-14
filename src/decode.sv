@@ -1,10 +1,11 @@
 `include "params.sv"
 
-module decode_unit (
+module decode_stage (
     input word instruction,
 
     output control_signals_t ctrl,
-    output word reg_val_1, reg_val_2, imm
+    output reg_index rs1_idx, rs2_idx, rd_idx,
+    output word imm
 );
 
     word imm_i;
@@ -17,11 +18,8 @@ module decode_unit (
     logic [2:0] funct3;
     logic [6:0] funct7;
 
-    reg_index rd;
-    reg_index rs1;
-    reg_index rs2;
-
     immediate_generator imm_gen1 (
+        .instruction(instruction),
         .imm_i(imm_i),
         .imm_s(imm_s),
         .imm_b(imm_b),
@@ -31,11 +29,24 @@ module decode_unit (
 
     always_comb begin : Assign_CTRL_Lines
         opcode = instruction[6:0];
-        rd = instruction[11:7];
+        rd_idx = instruction[11:7];
         funct3 = instruction[14:12];
-        rs1 = instruction[19:15];
-        rs2 = instruction[24:20];
+        rs1_idx = instruction[19:15];
+        rs2_idx = instruction[24:20];
         funct7 = instruction[31:25];
+
+        ctrl.reg_file_op = NO_REG_DATA;
+        ctrl.alu_op = NO_ALU_OP;
+        ctrl.alu_rs1_val = ALU_RS1_OP;
+        ctrl.alu_rs2_val = ALU_RS2_OP;
+        ctrl.mem_op = MEM_SKIP_OP;
+        ctrl.write_back_op = NO_WRITE_BACK;
+        ctrl.branch_op = NO_BRANCH;
+        ctrl.branch_enable = BRANCH_DISABLE;
+        ctrl.is_jal = JAL_DISABLE;
+        ctrl.is_jalr = JALR_DISABLE;
+
+        imm = 'b0;
 
         case (opcode)
             OPCODE_R: begin
@@ -44,10 +55,6 @@ module decode_unit (
                 ctrl.alu_rs2_val = ALU_RS2_OP;
                 ctrl.mem_op = MEM_SKIP_OP;
                 ctrl.write_back_op = WRITE_BACK_OUT;
-                ctrl.branch_op = NO_BRANCH;
-                ctrl.branch_enable = BRANCH_DISABLE;
-                ctrl.is_jal = JAL_DISABLE;
-                ctrl.is_jalr = JALR_DISABLE;
 
                 case ({funct7, funct3})
                     10'b0000000_000: ctrl.alu_op = OP_ALU_ADD;
@@ -70,10 +77,8 @@ module decode_unit (
                 ctrl.alu_rs2_val = ALU_IMM_OP;
                 ctrl.mem_op = MEM_SKIP_OP;
                 ctrl.write_back_op = WRITE_BACK_OUT;
-                ctrl.branch_op = NO_BRANCH;
-                ctrl.branch_enable = BRANCH_DISABLE;
-                ctrl.is_jal = JAL_DISABLE;
-                ctrl.is_jalr = JALR_DISABLE;
+                
+                imm = imm_i;
 
                 case (funct3)
                     3'b000: ctrl.alu_op = OP_ALU_ADD; // ADDI
@@ -100,14 +105,58 @@ module decode_unit (
                 ctrl.alu_rs2_val = ALU_IMM_OP;
                 ctrl.mem_op = MEM_LOAD_OP;
                 ctrl.write_back_op = WRITE_BACK_OUT;
-                ctrl.branch_op = NO_BRANCH;
-                ctrl.branch_enable = BRANCH_DISABLE;
-                ctrl.is_jal = JAL_DISABLE;
-                ctrl.is_jalr = JALR_DISABLE;
+
+                imm = imm_i;
             end
 
             OPCODE_SW: begin
                 ctrl.reg_file_op = NO_REG_DATA;
+                ctrl.alu_op = OP_ALU_ADD;
+                ctrl.alu_rs1_val = ALU_RS1_OP;
+                ctrl.alu_rs2_val = ALU_IMM_OP;
+                ctrl.mem_op = MEM_STORE_OP;
+                ctrl.write_back_op = WRITE_BACK_OUT;
+
+                imm = imm_s;
+            end
+
+            OPCODE_BRANCH: begin
+                ctrl.reg_file_op = NO_REG_DATA;
+                ctrl.branch_enable = BRANCH_ENABLE;
+                ctrl.alu_rs1_val = ALU_RS1_OP;
+                ctrl.alu_rs2_val = ALU_RS2_OP;
+                ctrl.alu_op = OP_ALU_ADD;
+
+                imm = imm_b;
+
+                case (funct3)
+                    3'b000: ctrl.branch_op = INST_BRCH_EQ;
+                    3'b001: ctrl.branch_op = INST_BRCH_NEQ;
+                    3'b100: ctrl.branch_op = INST_BRCH_LST;
+                    3'b101: ctrl.branch_op = INST_BRCH_GTE;
+                    3'b110: ctrl.branch_op = INST_BRCH_LSTU;
+                    3'b111: ctrl.branch_op = INST_BRCH_GTEU;
+                    default: ctrl.branch_op = NO_BRANCH;
+                endcase
+            end
+
+            OPCODE_JAL: begin
+                ctrl.reg_file_op = WRITE_REG_DATA;
+                ctrl.alu_op = OP_ALU_ADD;
+                ctrl.alu_rs1_val = ALU_RS1_OP;
+                ctrl.alu_rs2_val = ALU_IMM_OP;
+                ctrl.mem_op = MEM_SKIP_OP;
+                ctrl.write_back_op = WRITE_BACK_OUT;
+                ctrl.branch_op = NO_BRANCH;
+                ctrl.branch_enable = BRANCH_DISABLE;
+                ctrl.is_jal = JAL_ENABLE;
+                ctrl.is_jalr = JALR_DISABLE;
+
+                imm = imm_j;
+            end
+
+            OPCODE_JALR: begin
+                ctrl.reg_file_op = WRITE_REG_DATA;
                 ctrl.alu_op = OP_ALU_ADD;
                 ctrl.alu_rs1_val = ALU_RS1_OP;
                 ctrl.alu_rs2_val = ALU_IMM_OP;
@@ -116,8 +165,31 @@ module decode_unit (
                 ctrl.branch_op = NO_BRANCH;
                 ctrl.branch_enable = BRANCH_DISABLE;
                 ctrl.is_jal = JAL_DISABLE;
-                ctrl.is_jalr = JALR_DISABLE;
+                ctrl.is_jalr = JALR_ENABLE;
+                
+                imm = imm_i;
             end
+
+            OPCODE_LUI: begin
+                ctrl.reg_file_op = WRITE_REG_DATA;
+                ctrl.alu_rs1_val = ALU_PC_OP;
+                ctrl.alu_rs2_val = ALU_IMM_OP;
+                ctrl.alu_op = NO_ALU_OP;
+                ctrl.write_back_op = WRITE_BACK_OUT;
+
+                imm = imm_u;
+            end
+
+            OPCODE_AUIPC: begin
+                ctrl.reg_file_op = WRITE_REG_DATA;
+                ctrl.alu_rs1_val = ALU_PC_OP;
+                ctrl.alu_rs2_val = ALU_IMM_OP;
+                ctrl.alu_op = OP_ALU_ADD;
+                ctrl.write_back_op = WRITE_BACK_OUT;
+
+                imm = imm_u;
+            end
+
         endcase
     end
     

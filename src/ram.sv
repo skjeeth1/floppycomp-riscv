@@ -14,10 +14,18 @@ module data_memory (
             memory[mem_sig.address[9:2]] <= mem_sig.data_in;
         end
     end
+endmodule 
 
-    always_comb begin
-        if (mem_sig.mem_enable && mem_sig.mem_en == MEM_READ_EN) 
-            data_out = memory[mem_sig.address[9:2]];
-        else data_out = 'bz;
+
+module instruction_memory (
+    input word data_address,
+    output word instruction
+);
+
+    word memory [0:255];
+    
+    always_comb begin : Instruction_Mem
+        instruction = memory[data_address[9:2]];
     end
+    
 endmodule

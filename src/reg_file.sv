@@ -11,7 +11,7 @@ module reg_file (
     output word rs1_data, rs2_data
 );
 
-    logic [WORD_SIZE-1 : 0] registers [0 : 31];
+    logic [WORD_SIZE-1 : 0] registers [0 : REG_NUM - 1];
 
     always_ff @(posedge clock or posedge reset) begin : Write_Data_to_Reg
         if (reset) begin

@@ -11,6 +11,10 @@ parameter OPCODE_I = 7'b0010011;
 parameter OPCODE_LW = 7'b0000011;
 parameter OPCODE_SW = 7'b0100011;
 parameter OPCODE_BRANCH = 7'b1100011;
+parameter OPCODE_JAL = 7'b1101111;
+parameter OPCODE_JALR = 7'b1100111;
+parameter OPCODE_LUI = 7'b0110111;
+parameter OPCODE_AUIPC = 7'b0010111;
 
 
 typedef logic [WORD_SIZE - 1:0] word;
@@ -18,6 +22,7 @@ typedef logic [4:0] reg_index;
 
 
 typedef enum logic [4:0] { 
+    NO_ALU_OP,
     OP_ALU_ADD,
     OP_ALU_SUB,
     OP_ALU_SLL,
@@ -65,6 +70,13 @@ typedef enum logic {
     BRANCH_ENABLE
 } branch_en_t;
 
+
+typedef enum logic [1:0] { 
+    NO_EXECUTE,
+    ALU_EXECUTE,
+    BRANCH_EXECUTE,
+    JUMP_EXECUTE
+} execute_op_t;
 
 typedef enum logic [1:0] { 
     MEM_WRITE_EN,
@@ -115,8 +127,8 @@ typedef struct packed {
     write_back_op_t write_back_op;
     branch_op_t branch_op;
     branch_en_t branch_enable;
-    logic is_jal;
-    logic is_jalr;
+    jal_op_t is_jal;
+    jalr_op_t is_jalr;
 } control_signals_t;
 
 
