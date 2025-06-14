@@ -42,6 +42,6 @@ module alu_decoder (
         else op1 = rs1;
 
         if (alu_rs2 == ALU_IMM_OP) op2 = imm;
-        else op2 = rs1;
+        else op2 = rs2;
     end
 endmodule
