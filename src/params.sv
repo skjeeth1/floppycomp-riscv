@@ -49,13 +49,29 @@ typedef enum logic {
 
 typedef enum logic [1:0] { 
     MEM_WRITE_EN,
-    MEM_READ_EN,
-    MEM_NO_OP
+    MEM_READ_EN
+} mem_en_t;
+
+
+typedef enum logic {
+    MEM_SKIP_OP,
+    MEM_LOAD_OP,
+    MEM_STORE_OP
 } mem_op_t;
 
 
 typedef struct packed {
+    logic mem_enable;
+    mem_en_t mem_en;
+    word address;
+    word data_in;
+} data_memory_interface_t;
+
+
+typedef struct packed {
     reg_file_op_t reg_file_op;
+    alu_op_t alu_op;
+    mem_op_t mem_op;
 } control_signals_t;
 
 
