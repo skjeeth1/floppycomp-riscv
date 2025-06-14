@@ -3,6 +3,7 @@
 
 
 parameter WORD_SIZE = 32;
+parameter REG_NUM = 32;
 
 
 parameter OPCODE_R = 7'b0110011;
@@ -13,6 +14,7 @@ parameter OPCODE_BRANCH = 7'b1100011;
 
 
 typedef logic [WORD_SIZE - 1:0] word;
+typedef logic [4:0] reg_index;
 
 
 typedef enum logic [4:0] { 
@@ -42,9 +44,26 @@ typedef enum logic {
 
 
 typedef enum logic {
-    READ_REG_DATA,
+    NO_REG_DATA,
     WRITE_REG_DATA
 } reg_file_op_t;
+
+
+typedef enum logic [2:0] { 
+    NO_BRANCH,
+    INST_BRCH_EQ,
+    INST_BRCH_NEQ,
+    INST_BRCH_LST,
+    INST_BRCH_GTE,
+    INST_BRCH_LSTU,
+    INST_BRCH_GTEU
+} branch_op_t;
+
+
+typedef enum logic {
+    BRANCH_DISABLE,
+    BRANCH_ENABLE
+} branch_en_t;
 
 
 typedef enum logic [1:0] { 
@@ -57,7 +76,26 @@ typedef enum logic {
     MEM_SKIP_OP,
     MEM_LOAD_OP,
     MEM_STORE_OP
-} mem_op_t;
+} memory_op_t;
+
+
+typedef enum logic [1:0] { 
+    NO_WRITE_BACK,
+    WRITE_BACK_OUT,
+    WRITE_BACK_PC
+} write_back_op_t;
+
+
+typedef enum logic { 
+    JAL_DISABLE, 
+    JAL_ENABLE 
+} jal_op_t;
+
+
+typedef enum logic { 
+    JALR_DISABLE, 
+    JALR_ENABLE 
+} jalr_op_t;
 
 
 typedef struct packed {
@@ -71,8 +109,16 @@ typedef struct packed {
 typedef struct packed {
     reg_file_op_t reg_file_op;
     alu_op_t alu_op;
+    alu_rs1_t alu_rs1_val;
+    alu_rs2_t alu_rs2_val;
     mem_op_t mem_op;
+    write_back_op_t write_back_op;
+    branch_op_t branch_op;
+    branch_en_t branch_enable;
+    logic is_jal;
+    logic is_jalr;
 } control_signals_t;
+
 
 
 `endif
