@@ -52,6 +52,7 @@ module FloppyComp_V1 (
         .rs2(rs2),
         .imm(imm),
         .pc(pc),
+        .pc_4(pc_4),
         .alu_rs1(ctrl_sig.alu_rs1_val),
         .alu_rs2(ctrl_sig.alu_rs2_val),
         .alu_op_code(ctrl_sig.alu_op),

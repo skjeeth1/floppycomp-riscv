@@ -1,7 +1,7 @@
 `include "params.sv"
 
 module execute_stage (
-    input word rs1, rs2, imm, pc,
+    input word rs1, rs2, imm, pc, pc_4,
 
     input alu_rs1_t alu_rs1,
     input alu_rs2_t alu_rs2,
@@ -48,10 +48,10 @@ module execute_stage (
         branch_add_out = branch_out;
 
         if (jal_op == JAL_ENABLE) begin
-            memory_out = pc + 4;
+            memory_out = pc_4;
             branch_add_out = pc + imm;
         end else if (jalr_op == JALR_ENABLE) begin
-            memory_out = pc + 4;
+            memory_out = pc_4;
             branch_add_out = (rs1 + imm) & ~32'd1;
         end
     end
