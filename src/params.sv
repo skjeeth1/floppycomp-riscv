@@ -84,7 +84,7 @@ typedef enum logic [1:0] {
 } mem_en_t;
 
 
-typedef enum logic {
+typedef enum logic [1:0] {
     MEM_SKIP_OP,
     MEM_LOAD_OP,
     MEM_STORE_OP
@@ -123,7 +123,7 @@ typedef struct packed {
     alu_op_t alu_op;
     alu_rs1_t alu_rs1_val;
     alu_rs2_t alu_rs2_val;
-    mem_op_t mem_op;
+    memory_op_t mem_op;
     write_back_op_t write_back_op;
     branch_op_t branch_op;
     branch_en_t branch_enable;
