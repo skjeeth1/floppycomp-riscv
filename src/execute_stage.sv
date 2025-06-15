@@ -36,8 +36,8 @@ module execute_stage (
     branch_unit BRU1 (
         .rs1(rs1),
         .rs2(rs2),
-        .imm(imm),
-        .pc_val(pc),
+        .offset(imm),
+        .pc(pc),
         .branch_op(branch_op),
         .branch_scs(branch_scs),
         .branch_address(branch_out)
