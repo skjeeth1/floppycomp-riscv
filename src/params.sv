@@ -91,6 +91,22 @@ typedef enum logic [1:0] {
 } memory_op_t;
 
 
+typedef enum logic [2:0] { 
+    LOAD_BYTE,
+    LOAD_HBYTE,
+    LOAD_WORD,
+    LOAD_BYTEU,
+    LOAD_HBYTEU
+ } load_op_t;
+
+
+typedef enum logic [1:0] { 
+    STORE_BYTE,
+    STORE_HBYTE,
+    STORE_WORD
+ } store_op_t;
+
+
 typedef enum logic [1:0] { 
     NO_WRITE_BACK,
     WRITE_BACK_OUT,
@@ -124,6 +140,8 @@ typedef struct packed {
     alu_rs1_t alu_rs1_val;
     alu_rs2_t alu_rs2_val;
     memory_op_t mem_op;
+    load_op_t load_op;
+    store_op_t store_op;
     write_back_op_t write_back_op;
     branch_op_t branch_op;
     branch_en_t branch_enable;

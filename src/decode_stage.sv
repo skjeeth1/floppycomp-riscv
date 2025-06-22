@@ -40,6 +40,8 @@ module decode_stage (
         ctrl.alu_rs1_val = ALU_RS1_OP;
         ctrl.alu_rs2_val = ALU_RS2_OP;
         ctrl.mem_op = MEM_SKIP_OP;
+        ctrl.load_op = LOAD_WORD;
+        ctrl.store_op = STORE_WORD;
         ctrl.write_back_op = NO_WRITE_BACK;
         ctrl.branch_op = NO_BRANCH;
         ctrl.branch_enable = BRANCH_DISABLE;
@@ -106,6 +108,14 @@ module decode_stage (
                 ctrl.mem_op = MEM_LOAD_OP;
                 ctrl.write_back_op = WRITE_BACK_OUT;
 
+                case (funct3)
+                    3'b000: ctrl.load_op = LOAD_BYTE;
+                    3'b001: ctrl.load_op = LOAD_HBYTE;
+                    3'b010: ctrl.load_op = LOAD_WORD;
+                    3'b100: ctrl.load_op = LOAD_BYTEU;
+                    3'b101: ctrl.load_op = LOAD_HBYTEU;
+                endcase
+
                 imm = imm_i;
             end
 
@@ -116,6 +126,12 @@ module decode_stage (
                 ctrl.alu_rs2_val = ALU_IMM_OP;
                 ctrl.mem_op = MEM_STORE_OP;
                 ctrl.write_back_op = WRITE_BACK_OUT;
+
+                case (funct3)
+                    3'b000: ctrl.store_op = STORE_BYTE;
+                    3'b001: ctrl.store_op = STORE_HBYTE;
+                    3'b010: ctrl.store_op = STORE_WORD;
+                endcase
 
                 imm = imm_s;
             end
