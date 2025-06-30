@@ -96,8 +96,8 @@ All control signals are generated in the decode stage and propagated through the
 - [ ] **Add functionality for privilege modes**  
   Extend the CPU to support RISC-V privilege levels (user, supervisor, machine) and related control logic.
 
-- [ ] **Create a new project for multi-cycle and pipelined CPU**  
-  Start a separate project directory to design and implement multi-cycle and pipelined versions of the CPU for performance comparison and learning.
+- [ ] **Branch project for multi-cycle and pipelined CPU**  
+  Start a new branch to design and implement multi-cycle and pipelined versions of the CPU for performance comparison and learning.
 
 ---
 
