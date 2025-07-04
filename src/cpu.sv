@@ -1,6 +1,6 @@
 `include "params.sv"
 
-module FloppyComp_V1 (
+module FloppyComp_V2 (
     input logic clock,
     input logic reset,
     input word data_in,
@@ -15,27 +15,68 @@ module FloppyComp_V1 (
     word pc;
     word pc_4;
     word jump_address;
-    word instruction;
 
     reg_index rs1_idx, rs2_idx, rd_idx;
     word rs1, rs2, imm;
 
+    word instruction;
     word execute_out;
     word memory_out;
     word reg_input;
 
-    fetch_stage F1 (
+    word bus;
+
+    fsm_state_op_t state;
+    fsm_state_op_t next_state;
+
+    control_signals_t latched_ctrl_sig;
+
+
+    always_ff @( posedge clock or posedge reset) begin : CPU_FSM
+        if (reset) begin
+            state <= FETCH_ADDR;
+        end else begin
+            state <= next_state;
+        end
+    end
+
+    always_comb begin : CONTROL_BLOCK
+        unique case (state)
+            FETCH_ADDR:   next_state = FETCH_WAIT;
+            FETCH_WAIT:   next_state = DECODE;
+            DECODE: next_state = (ctrl_sig.alu_op == NO_ALU_OP) ? WRITEBACK : EXECUTE;
+            EXECUTE: next_state = (ctrl_sig.mem_op == MEM_SKIP_OP) ? WRITEBACK : MEMORY_ADDR;
+            MEMORY_ADDR:   next_state = MEMORY_WAIT;
+            MEMORY_WAIT:   next_state = (ctrl_sig.mem_op == MEM_LOAD_OP) ? WRITEBACK : FETCH_ADDR;
+            WRITEBACK:     next_state = FETCH_ADDR;
+            default:       next_state = FETCH_ADDR;
+        endcase
+    end
+
+    assign pc_update_en = (state == FETCH_ADDR);
+    assign fetch_instruction_en = (state == FETCH_WAIT);
+    assign decode_en = (state == DECODE);
+    assign execute_en = (state == EXECUTE);
+    // assign memory_add_
+
+    pc_update PU1 (
         .clock(clock),
         .reset(reset),
+        .en(fetch_addr_en),
         .jump_address(jump_address),
-        .memory_inst_data(inst_data),
         .branch_en(ctrl_sig.branch_enable),
         .jal_en(ctrl_sig.is_jal),
         .jalr_en(ctrl_sig.is_jalr),
         .memory_inst_address(inst_add),
-        .instruction_out(instruction),
         .pc_4(pc_4),
         .pc(pc)
+    );
+
+    fetch_instruction_unit FI1 (
+        .clock(clock),
+        .en(fetch_inst_en),
+        .memory_inst_data(inst_data),
+        .instruction_out(instruction)
     );
 
     decode_stage D1 (
@@ -59,7 +100,7 @@ module FloppyComp_V1 (
         .branch_op(ctrl_sig.branch_op),
         .jal_op(ctrl_sig.is_jal),
         .jalr_op(ctrl_sig.is_jalr),
-        .memory_out(execute_out),
+        .result_out(execute_out),
         .branch_scs(ctrl_sig.branch_enable),
         .branch_add_out(jump_address)
     );

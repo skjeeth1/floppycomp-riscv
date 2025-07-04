@@ -12,7 +12,7 @@ module execute_stage (
     input jal_op_t jal_op,
     input jalr_op_t jalr_op,
 
-    output word memory_out,
+    output word result_out,
 
     output branch_en_t branch_scs,
     output word branch_add_out
@@ -44,14 +44,14 @@ module execute_stage (
     );
 
     always_comb begin : Jump_Logic
-        memory_out = alu_out;
+        result_out = alu_out;
         branch_add_out = branch_out;
 
         if (jal_op == JAL_ENABLE) begin
-            memory_out = pc_4;
+            result_out = pc_4;
             branch_add_out = pc + imm;
         end else if (jalr_op == JALR_ENABLE) begin
-            memory_out = pc_4;
+            result_out = pc_4;
             branch_add_out = (rs1 + imm) & ~32'd1;
         end
     end

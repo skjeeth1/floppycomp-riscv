@@ -20,8 +20,26 @@ parameter OPCODE_AUIPC = 7'b0010111;
 typedef logic [WORD_SIZE - 1:0] word;
 typedef logic [4:0] reg_index;
 
+typedef enum logic [2:0] { 
+    FETCH_ADDR,
+    FETCH_WAIT,
+    DECODE,
+    EXECUTE,
+    MEMORY_ADDR,
+    MEMORY_WAIT,
+    WRITEBACK
+} fsm_state_op_t;
 
-typedef enum logic [4:0] { 
+typedef struct packed {
+    logic fetch_addr_en;
+    logic fetch_inst_en;
+    logic alu_en;
+    logic branch_en;
+    logic memory_en;
+    logic write_back_en;
+} enable_signals_t;
+
+typedef enum logic [3:0] { 
     NO_ALU_OP,
     OP_ALU_ADD,
     OP_ALU_SUB,

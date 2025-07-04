@@ -6,21 +6,16 @@
       <db_ref path="FloppyComp_V1_tb_behav.wdb" id="1">
          <top_modules>
             <top_module name="FloppyComp_V1_tb" />
-            <top_module name="\$unit_alu_sv_3154979831 " />
+            <top_module name="\$unit_alu_tb_sv_472937159 " />
             <top_module name="glbl" />
          </top_modules>
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0 ps"></ZoomStartTime>
-      <ZoomEndTime time="9 ps"></ZoomEndTime>
-      <Cursor1Time time="0 ps"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="62"></NameColumnWidth>
-      <ValueColumnWidth column_width="60"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="17" />
+   <WVObjectSize size="7" />
    <wvobject type="logic" fp_name="/FloppyComp_V1_tb/clock">
       <obj_property name="ElementShortName">clock</obj_property>
       <obj_property name="ObjectShortName">clock</obj_property>
@@ -48,45 +43,5 @@
    <wvobject type="array" fp_name="/FloppyComp_V1_tb/instr_mem">
       <obj_property name="ElementShortName">instr_mem[0:255][31:0]</obj_property>
       <obj_property name="ObjectShortName">instr_mem[0:255][31:0]</obj_property>
-   </wvobject>
-   <wvobject type="logic" fp_name="/FloppyComp_V1_tb/cpu/R1/clock">
-      <obj_property name="ElementShortName">clock</obj_property>
-      <obj_property name="ObjectShortName">clock</obj_property>
-   </wvobject>
-   <wvobject type="logic" fp_name="/FloppyComp_V1_tb/cpu/R1/reset">
-      <obj_property name="ElementShortName">reset</obj_property>
-      <obj_property name="ObjectShortName">reset</obj_property>
-   </wvobject>
-   <wvobject type="other" fp_name="/FloppyComp_V1_tb/cpu/R1/mem_op">
-      <obj_property name="ElementShortName">mem_op</obj_property>
-      <obj_property name="ObjectShortName">mem_op</obj_property>
-   </wvobject>
-   <wvobject type="array" fp_name="/FloppyComp_V1_tb/cpu/R1/rs1">
-      <obj_property name="ElementShortName">rs1[4:0]</obj_property>
-      <obj_property name="ObjectShortName">rs1[4:0]</obj_property>
-   </wvobject>
-   <wvobject type="array" fp_name="/FloppyComp_V1_tb/cpu/R1/rs2">
-      <obj_property name="ElementShortName">rs2[4:0]</obj_property>
-      <obj_property name="ObjectShortName">rs2[4:0]</obj_property>
-   </wvobject>
-   <wvobject type="array" fp_name="/FloppyComp_V1_tb/cpu/R1/rd">
-      <obj_property name="ElementShortName">rd[4:0]</obj_property>
-      <obj_property name="ObjectShortName">rd[4:0]</obj_property>
-   </wvobject>
-   <wvobject type="array" fp_name="/FloppyComp_V1_tb/cpu/R1/write_data">
-      <obj_property name="ElementShortName">write_data[31:0]</obj_property>
-      <obj_property name="ObjectShortName">write_data[31:0]</obj_property>
-   </wvobject>
-   <wvobject type="array" fp_name="/FloppyComp_V1_tb/cpu/R1/rs1_data">
-      <obj_property name="ElementShortName">rs1_data[31:0]</obj_property>
-      <obj_property name="ObjectShortName">rs1_data[31:0]</obj_property>
-   </wvobject>
-   <wvobject type="array" fp_name="/FloppyComp_V1_tb/cpu/R1/rs2_data">
-      <obj_property name="ElementShortName">rs2_data[31:0]</obj_property>
-      <obj_property name="ObjectShortName">rs2_data[31:0]</obj_property>
-   </wvobject>
-   <wvobject type="array" fp_name="/FloppyComp_V1_tb/cpu/R1/registers">
-      <obj_property name="ElementShortName">registers[0:31][31:0]</obj_property>
-      <obj_property name="ObjectShortName">registers[0:31][31:0]</obj_property>
    </wvobject>
 </wave_config>

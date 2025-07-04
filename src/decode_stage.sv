@@ -69,7 +69,6 @@ module decode_stage (
                     10'b0000000_100: ctrl.alu_op = OP_ALU_XOR;
                     10'b0000000_010: ctrl.alu_op = OP_ALU_SLT;
                     10'b0000000_011: ctrl.alu_op = OP_ALU_SLTU;
-                    default: ; // Keep default
                 endcase
             end 
             
