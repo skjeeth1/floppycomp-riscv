@@ -1,6 +1,8 @@
 `include "params.sv"
 
 module execute_stage (
+    input logic clock,
+    input logic en,
     input word rs1, rs2, imm, pc, pc_4,
 
     input alu_rs1_t alu_rs1,
@@ -12,15 +14,18 @@ module execute_stage (
     input jal_op_t jal_op,
     input jalr_op_t jalr_op,
 
-    output word result_out,
-
-    output branch_en_t branch_scs,
-    output word branch_add_out
+    output word execute_result_out,
+    output branch_en_t branch_success_signal,
+    output word branch_address
 
 );
 
     word alu_out;
     word branch_out;
+
+    word result_out;
+    branch_en_t branch_scs;
+    word branch_add_out;
     
     alu_unit ALU1 (
         .op1(rs1),
@@ -54,6 +59,15 @@ module execute_stage (
             result_out = pc_4;
             branch_add_out = (rs1 + imm) & ~32'd1;
         end
+    end
+
+    always_ff @( posedge clock ) begin
+        if (en) begin
+            execute_result_out <= result_out;
+            branch_success_signal <= branch_scs;
+            branch_address <= branch_add_out;
+        end
+
     end
     
 endmodule

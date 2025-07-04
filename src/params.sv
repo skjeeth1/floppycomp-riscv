@@ -112,9 +112,9 @@ typedef enum logic [1:0] {
 typedef enum logic [2:0] { 
     LOAD_BYTE,
     LOAD_HBYTE,
-    LOAD_WORD,
     LOAD_BYTEU,
-    LOAD_HBYTEU
+    LOAD_HBYTEU,
+    LOAD_WORD
  } load_op_t;
 
 

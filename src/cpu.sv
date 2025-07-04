@@ -57,12 +57,14 @@ module FloppyComp_V2 (
     assign fetch_instruction_en = (state == FETCH_WAIT);
     assign decode_en = (state == DECODE);
     assign execute_en = (state == EXECUTE);
-    // assign memory_add_
+    assign memory_stage_addr_en = (state == MEMORY_ADDR);
+    assign memory_stage_wait_en = (state == MEMORY_WAIT);
+    assign write_back_en = (state == WRITEBACK);
 
     pc_update PU1 (
         .clock(clock),
         .reset(reset),
-        .en(fetch_addr_en),
+        .en(pc_update_en),
         .jump_address(jump_address),
         .branch_en(ctrl_sig.branch_enable),
         .jal_en(ctrl_sig.is_jal),
@@ -72,23 +74,27 @@ module FloppyComp_V2 (
         .pc(pc)
     );
 
-    fetch_instruction_unit FI1 (
+    fetch_instruction FI1 (
         .clock(clock),
-        .en(fetch_inst_en),
+        .en(fetch_instruction_en),
         .memory_inst_data(inst_data),
         .instruction_out(instruction)
     );
 
     decode_stage D1 (
+        .clock(clock),
+        .en(decode_en),
         .instruction(instruction),
-        .ctrl(ctrl_sig),
-        .rs1_idx(rs1_idx),
-        .rs2_idx(rs2_idx),
-        .rd_idx(rd_idx),
-        .imm(imm)
+        .ctrl_signals(ctrl_sig),
+        .rs1_index(rs1_idx),
+        .rs2_index(rs2_idx),
+        .rd_index(rd_idx),
+        .immediate(imm)
     );
 
     execute_stage E1 (
+        .clock(clock),
+        .en(execute_en),
         .rs1(rs1),
         .rs2(rs2),
         .imm(imm),
@@ -100,26 +106,38 @@ module FloppyComp_V2 (
         .branch_op(ctrl_sig.branch_op),
         .jal_op(ctrl_sig.is_jal),
         .jalr_op(ctrl_sig.is_jalr),
-        .result_out(execute_out),
-        .branch_scs(ctrl_sig.branch_enable),
-        .branch_add_out(jump_address)
+        .execute_result_out(execute_out),
+        .branch_success_signal(ctrl_sig.branch_enable),
+        .branch_address(jump_address)
     );
 
-    memory_stage M1 (
+    memory_stage_addr MA1 (
+        .clock(clock),
+        .en(memory_stage_addr_en),
         .alu_result(execute_out),
         .reg_data(rs2),
         .mem_op(ctrl_sig.mem_op),
+        .store_op(ctrl_sig.store_op),
+        .memory_signals(data_mem_int)
+    );
+
+    memory_stage_wait MW1 (
+        .clock(clock),
+        .en(memory_stage_wait_en),
         .mem_data_out(data_in),
-        .mem_sig(data_mem_int),
+        .load_op(ctrl_sig.load_op),
+        .alu_result(execute_out),
         .write_out(memory_out)
     );
 
     write_back_stage WB1 (
+        .clock(clock),
+        .en(write_back_en),
         .pc_4(pc),
         .memory_out(memory_out),
         .write_back_ctrl(ctrl_sig.write_back_op),
-        .reg_op(ctrl_sig.reg_file_op),
-        .reg_write_data(reg_input)
+        .register_op(ctrl_sig.reg_file_op),
+        .register_data(reg_input)
     );
     
     reg_file R1 (

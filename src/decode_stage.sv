@@ -1,12 +1,18 @@
 `include "params.sv"
 
 module decode_stage (
+    input logic clock,
+    input logic en,
     input word instruction,
 
-    output control_signals_t ctrl,
-    output reg_index rs1_idx, rs2_idx, rd_idx,
-    output word imm
+    output control_signals_t ctrl_signals,
+    output reg_index rs1_index, rs2_index, rd_index,
+    output word immediate 
 );
+
+    control_signals_t ctrl;
+    reg_index rs1_idx, rs2_idx, rd_idx;
+    word imm;
 
     word imm_i;
     word imm_s;
@@ -55,7 +61,6 @@ module decode_stage (
                 ctrl.reg_file_op = WRITE_REG_DATA;
                 ctrl.alu_rs1_val = ALU_RS1_OP;
                 ctrl.alu_rs2_val = ALU_RS2_OP;
-                ctrl.mem_op = MEM_SKIP_OP;
                 ctrl.write_back_op = WRITE_BACK_OUT;
 
                 case ({funct7, funct3})
@@ -76,7 +81,6 @@ module decode_stage (
                 ctrl.reg_file_op = WRITE_REG_DATA;
                 ctrl.alu_rs1_val = ALU_RS1_OP;
                 ctrl.alu_rs2_val = ALU_IMM_OP;
-                ctrl.mem_op = MEM_SKIP_OP;
                 ctrl.write_back_op = WRITE_BACK_OUT;
                 
                 imm = imm_i;
@@ -160,7 +164,6 @@ module decode_stage (
                 ctrl.alu_op = OP_ALU_ADD;
                 ctrl.alu_rs1_val = ALU_RS1_OP;
                 ctrl.alu_rs2_val = ALU_IMM_OP;
-                ctrl.mem_op = MEM_SKIP_OP;
                 ctrl.write_back_op = WRITE_BACK_OUT;
                 ctrl.branch_op = NO_BRANCH;
                 ctrl.branch_enable = BRANCH_DISABLE;
@@ -175,7 +178,6 @@ module decode_stage (
                 ctrl.alu_op = OP_ALU_ADD;
                 ctrl.alu_rs1_val = ALU_RS1_OP;
                 ctrl.alu_rs2_val = ALU_IMM_OP;
-                ctrl.mem_op = MEM_LOAD_OP;
                 ctrl.write_back_op = WRITE_BACK_OUT;
                 ctrl.branch_op = NO_BRANCH;
                 ctrl.branch_enable = BRANCH_DISABLE;
@@ -206,6 +208,17 @@ module decode_stage (
             end
 
         endcase
+    end
+
+    always_ff @( posedge clock ) begin
+        if (en) begin
+            ctrl_signals <= ctrl;
+            rs1_index <= rs1_idx; 
+            rs2_index <= rs2_idx; 
+            rd_index <= rd_idx;
+            immediate <= imm;
+        end
+
     end
     
 endmodule
