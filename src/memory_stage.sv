@@ -52,7 +52,7 @@ endmodule
 module memory_stage_wait (
     input logic clock,
     input logic en,
-    input word mem_data_out,
+    input word mem_data_in,
     input load_op_t load_op,
     input word alu_result,
 
@@ -62,46 +62,46 @@ module memory_stage_wait (
     word computed_result;
 
     always_comb begin : LOAD_WORD_FROM_MEM
-        computed_result = mem_data_out;
+        computed_result = mem_data_in;
         
         unique case (load_op)
             LOAD_BYTE: begin
                 unique case (alu_result[1:0])
-                    2'b00: computed_result = {{24{mem_data_out[7]}},   mem_data_out[7:0]};
-                    2'b01: computed_result = {{24{mem_data_out[15]}},  mem_data_out[15:8]};
-                    2'b10: computed_result = {{24{mem_data_out[23]}},  mem_data_out[23:16]};
-                    2'b11: computed_result = {{24{mem_data_out[31]}},  mem_data_out[31:24]};
+                    2'b00: computed_result = {{24{mem_data_in[7]}},   mem_data_in[7:0]};
+                    2'b01: computed_result = {{24{mem_data_in[15]}},  mem_data_in[15:8]};
+                    2'b10: computed_result = {{24{mem_data_in[23]}},  mem_data_in[23:16]};
+                    2'b11: computed_result = {{24{mem_data_in[31]}},  mem_data_in[31:24]};
                 endcase
             end
 
             LOAD_BYTEU: begin
                 unique case (alu_result[1:0])
-                    2'b00: computed_result = {24'b0, mem_data_out[7:0]};
-                    2'b01: computed_result = {24'b0, mem_data_out[15:8]};
-                    2'b10: computed_result = {24'b0, mem_data_out[23:16]};
-                    2'b11: computed_result = {24'b0, mem_data_out[31:24]};
+                    2'b00: computed_result = {24'b0, mem_data_in[7:0]};
+                    2'b01: computed_result = {24'b0, mem_data_in[15:8]};
+                    2'b10: computed_result = {24'b0, mem_data_in[23:16]};
+                    2'b11: computed_result = {24'b0, mem_data_in[31:24]};
                 endcase
             end
 
             LOAD_HBYTE: begin
                 unique case (alu_result[1])
-                    1'b0: computed_result = {{16{mem_data_out[15]}}, mem_data_out[15:0]};
-                    1'b1: computed_result = {{16{mem_data_out[31]}}, mem_data_out[31:16]};
+                    1'b0: computed_result = {{16{mem_data_in[15]}}, mem_data_in[15:0]};
+                    1'b1: computed_result = {{16{mem_data_in[31]}}, mem_data_in[31:16]};
                 endcase
             end
 
             LOAD_HBYTEU: begin
                 unique case (alu_result[1])
-                    1'b0: computed_result = {16'b0, mem_data_out[15:0]};
-                    1'b1: computed_result = {16'b0, mem_data_out[31:16]};
+                    1'b0: computed_result = {16'b0, mem_data_in[15:0]};
+                    1'b1: computed_result = {16'b0, mem_data_in[31:16]};
                 endcase
             end
 
-            LOAD_WORD: computed_result = mem_data_out;  
+            LOAD_WORD: computed_result = mem_data_in;  
         endcase
     end
 
-    always_ff @( posedge clock ) begin : WRITE_MEM_DATA_OUT
+    always_ff @( posedge clock ) begin : WRITE_mem_data_in
         if (en)
             write_out <= computed_result;
     end
