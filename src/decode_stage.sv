@@ -218,7 +218,6 @@ module decode_stage (
             rd_index <= rd_idx;
             immediate <= imm;
         end
-
     end
     
 endmodule
