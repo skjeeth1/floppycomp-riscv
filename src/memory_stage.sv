@@ -76,7 +76,7 @@ module memory_stage (
                 mem_sig.data_in = reg_data;
 
                 case (store_op)
-                    STORE_BYTE: write_out = {24'b0,   reg_data[7:0]};
+                    STORE_BYTE: mem_sig.data_in = {24'b0,   reg_data[7:0]};
                     STORE_HBYTE: mem_sig.data_in = {16'b0, reg_data[31:16]};
                     STORE_WORD: mem_sig.data_in = reg_data;
                 endcase

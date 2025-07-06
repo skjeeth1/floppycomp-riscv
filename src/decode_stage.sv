@@ -176,7 +176,7 @@ module decode_stage (
                 ctrl.alu_op = OP_ALU_ADD;
                 ctrl.alu_rs1_val = ALU_RS1_OP;
                 ctrl.alu_rs2_val = ALU_IMM_OP;
-                ctrl.mem_op = MEM_LOAD_OP;
+                ctrl.mem_op = MEM_SKIP_OP;
                 ctrl.write_back_op = WRITE_BACK_OUT;
                 ctrl.branch_op = NO_BRANCH;
                 ctrl.branch_enable = BRANCH_DISABLE;

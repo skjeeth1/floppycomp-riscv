@@ -15,7 +15,8 @@ module top (
         .reset(reset),
         .data_in(data_mem_out),
         .inst_data(inst_mem_out),
-        .inst_add(inst_mem_add)
+        .inst_add(inst_mem_add),
+        .data_mem_int(data_mem_int)
     );
 
     data_memory DM1 (
