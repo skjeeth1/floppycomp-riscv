@@ -4,12 +4,12 @@
 module fetch_stage (
     input logic clock,
     input logic reset,
+    input logic stall,
+
     input word inst_data_from_memory,
 
     input logic pc_branch,
     input word jump_address,
-
-    input logic stall,
 
     if_id_if.master if_id_out
 );
@@ -19,7 +19,7 @@ module fetch_stage (
 
     assign pc_plus4 = pc_reg + 4;
 
-    always_ff @( posedge clock ) begin
+    always_ff @( posedge clock ) begin : Update_PC_Logic
         if (reset) begin
             pc_reg <= 'b0;
             if_id_out.valid <= 'b0;

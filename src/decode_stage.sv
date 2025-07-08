@@ -1,13 +1,21 @@
 `include "params.sv"
 
 module decode_stage (
-    input word instruction,
+    input logic clock,
+    input logic reset,
+    input logic stall,
+    
+    input word rs1_val,
+    input word rs2_val,
 
-    output control_signals_t ctrl,
-    output reg_index rs1_idx, rs2_idx, rd_idx,
-    output word imm
+    output reg_index rs1_idx,
+    output reg_index rs2_idx,
+
+    if_id_if.slave if_id_in,
+    id_ex_if.master id_ex_out
 );
 
+    word imm;
     word imm_i;
     word imm_s;
     word imm_b;
@@ -18,8 +26,12 @@ module decode_stage (
     logic [2:0] funct3;
     logic [6:0] funct7;
 
+    reg_index rd_idx;
+
+    control_signals_t ctrl;
+
     immediate_generator imm_gen1 (
-        .instruction(instruction),
+        .instruction(if_id_in.instruction),
         .imm_i(imm_i),
         .imm_s(imm_s),
         .imm_b(imm_b),
@@ -28,12 +40,13 @@ module decode_stage (
     );
 
     always_comb begin : Assign_CTRL_Lines
-        opcode = instruction[6:0];
-        rd_idx = instruction[11:7];
-        funct3 = instruction[14:12];
-        rs1_idx = instruction[19:15];
-        rs2_idx = instruction[24:20];
-        funct7 = instruction[31:25];
+        opcode = if_id_in.instruction[6:0];
+        funct3 = if_id_in.instruction[14:12];
+        funct7 = if_id_in.instruction[31:25];
+
+        rs1_idx = if_id_in.instruction[19:15];
+        rs2_idx = if_id_in.instruction[24:20];
+        rd_idx = if_id_in.instruction[11:7];
 
         ctrl.reg_file_op = NO_REG_DATA;
         ctrl.alu_op = NO_ALU_OP;
@@ -44,6 +57,7 @@ module decode_stage (
         ctrl.store_op = STORE_WORD;
         ctrl.write_back_op = NO_WRITE_BACK;
         ctrl.branch_op = NO_BRANCH;
+
         ctrl.branch_enable = BRANCH_DISABLE;
         ctrl.is_jal = JAL_DISABLE;
         ctrl.is_jalr = JALR_DISABLE;
@@ -69,7 +83,7 @@ module decode_stage (
                     10'b0000000_100: ctrl.alu_op = OP_ALU_XOR;
                     10'b0000000_010: ctrl.alu_op = OP_ALU_SLT;
                     10'b0000000_011: ctrl.alu_op = OP_ALU_SLTU;
-                    default: ; // Keep default
+                    default: ; 
                 endcase
             end 
             
@@ -91,7 +105,7 @@ module decode_stage (
                     3'b111: ctrl.alu_op = OP_ALU_AND; // ANDI
                     3'b001: ctrl.alu_op = OP_ALU_SLL; // SLLI
                     3'b101: begin
-                        if (instruction[30] == 1'b0)
+                        if (if_id_in.instruction[30] == 1'b0)
                             ctrl.alu_op = OP_ALU_SRL; // SRLI
                         else
                             ctrl.alu_op = OP_ALU_SRA; // SRAI
@@ -208,12 +222,33 @@ module decode_stage (
 
         endcase
     end
+
+    always_ff @( posedge clock ) begin
+        if (reset) begin
+            id_ex_out.valid <= 1'b0;
+        end else if (!stall) begin
+            id_ex_out.ctrl <= ctrl;
+
+            id_ex_out.rs1_idx <= rs1_idx;
+            id_ex_out.rs2_idx <= rs2_idx;
+            id_ex_out.rd_idx <= rd_idx;
+
+            id_ex_out.rs1_val <= rs1_val;
+            id_ex_out.rs2_val <= rs2_val;
+
+            id_ex_out.imm <= imm;
+            id_ex_out.pc <= if_id_in.pc;
+            id_ex_out.pc_plus4 <= if_id_in.pc_plus4;
+
+            id_ex_out.valid <= 1'b1;
+        end
+    end
     
 endmodule
 
 
 module immediate_generator (
-    input  word instruction,
+    input word instruction,
 
     output word imm_i,
     output word imm_s,
