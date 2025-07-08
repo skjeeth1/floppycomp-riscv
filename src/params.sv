@@ -78,10 +78,11 @@ typedef enum logic [1:0] {
     JUMP_EXECUTE
 } execute_op_t;
 
+
 typedef enum logic [1:0] { 
     MEM_WRITE_EN,
     MEM_READ_EN
-} mem_en_t;
+} memory_en_t;
 
 
 typedef enum logic [1:0] {
@@ -128,7 +129,7 @@ typedef enum logic {
 
 typedef struct packed {
     logic mem_enable;
-    mem_en_t mem_en;
+    memory_en_t mem_en;
     word address;
     word data_in;
 } data_memory_interface_t;
@@ -148,7 +149,5 @@ typedef struct packed {
     jal_op_t is_jal;
     jalr_op_t is_jalr;
 } control_signals_t;
-
-
 
 `endif

@@ -1,39 +1,39 @@
 `include "params.sv"
+`include "interface.sv"
 
 module fetch_stage (
     input logic clock,
     input logic reset,
+    input word inst_data_from_memory,
+
+    input logic pc_branch,
     input word jump_address,
-    input word memory_inst_data,
 
-    input branch_en_t branch_en,
-    input jal_op_t jal_en,
-    input jalr_op_t jalr_en,
+    input logic stall,
 
-    output word memory_inst_address,
-    output word instruction_out,
-    output word pc_4,
-    output word pc
+    if_id_if.master if_id_out
 );
 
     word pc_reg;
+    word pc_plus4;
 
-    always_comb begin
-        pc_4 = pc_reg + 4;
-        pc = pc_reg;
-    end
+    assign pc_plus4 = pc_reg + 4;
 
-    always_ff @(posedge clock or posedge reset) begin : address_out
+    always_ff @( posedge clock ) begin
         if (reset) begin
             pc_reg <= 'b0;
-        end else begin
-            pc_reg <= (branch_en == BRANCH_ENABLE || jal_en == JAL_ENABLE || jalr_en == JALR_ENABLE) ? jump_address : pc_4;
-        end
-    end
+            if_id_out.valid <= 'b0;
+        end else if (!stall) begin
+            if_id_out.instruction <= inst_data_from_memory;
+            if_id_out.pc <= pc_reg;
+            if_id_out.pc_plus4 <= pc_plus4;
+            if_id_out.valid <= 1'b1;
 
-    always_comb begin : output_instruction
-        memory_inst_address = pc_reg;
-        instruction_out = memory_inst_data;
+            if (pc_branch) 
+                pc_reg <= jump_address;
+            else 
+                pc_reg <= pc_plus4;
+        end         
     end
     
 endmodule
