@@ -72,14 +72,6 @@ typedef enum logic {
 
 
 typedef enum logic [1:0] { 
-    NO_EXECUTE,
-    ALU_EXECUTE,
-    BRANCH_EXECUTE,
-    JUMP_EXECUTE
-} execute_op_t;
-
-
-typedef enum logic [1:0] { 
     MEM_WRITE_EN,
     MEM_READ_EN
 } memory_en_t;
@@ -110,7 +102,7 @@ typedef enum logic [1:0] {
 
 typedef enum logic [1:0] { 
     NO_WRITE_BACK,
-    WRITE_BACK_OUT,
+    WRITE_BACK_REG,
     WRITE_BACK_PC
 } write_back_op_t;
 
@@ -134,20 +126,28 @@ typedef struct packed {
     word data_in;
 } data_memory_interface_t;
 
-
+// Control Signals for execute stage
 typedef struct packed {
-    reg_file_op_t reg_file_op;
     alu_op_t alu_op;
     alu_rs1_t alu_rs1_val;
     alu_rs2_t alu_rs2_val;
+
+    branch_op_t branch_op;
+    jal_op_t is_jal;
+    jalr_op_t is_jalr;
+} execute_ctrl_t;
+
+// Control Signals for memory stage
+typedef struct packed {
     memory_op_t mem_op;
     load_op_t load_op;
     store_op_t store_op;
+} memory_ctrl_t;
+
+// Control Signals for write back stage
+typedef struct packed {
+    reg_file_op_t reg_file_op;
     write_back_op_t write_back_op;
-    branch_op_t branch_op;
-    branch_en_t branch_enable;
-    jal_op_t is_jal;
-    jalr_op_t is_jalr;
-} control_signals_t;
+} write_back_ctrl_t;
 
 `endif

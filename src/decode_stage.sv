@@ -1,4 +1,5 @@
 `include "params.sv"
+`include "interface.sv"
 
 module decode_stage (
     input logic clock,
@@ -28,7 +29,9 @@ module decode_stage (
 
     reg_index rd_idx;
 
-    control_signals_t ctrl;
+    execute_ctrl_t execute_ctrl;
+    memory_ctrl_t memory_ctrl;
+    write_back_ctrl_t write_back_ctrl;
 
     immediate_generator imm_gen1 (
         .instruction(if_id_in.instruction),
@@ -48,174 +51,175 @@ module decode_stage (
         rs2_idx = if_id_in.instruction[24:20];
         rd_idx = if_id_in.instruction[11:7];
 
-        ctrl.reg_file_op = NO_REG_DATA;
-        ctrl.alu_op = NO_ALU_OP;
-        ctrl.alu_rs1_val = ALU_RS1_OP;
-        ctrl.alu_rs2_val = ALU_RS2_OP;
-        ctrl.mem_op = MEM_SKIP_OP;
-        ctrl.load_op = LOAD_WORD;
-        ctrl.store_op = STORE_WORD;
-        ctrl.write_back_op = NO_WRITE_BACK;
-        ctrl.branch_op = NO_BRANCH;
+        execute_ctrl.alu_op = NO_ALU_OP;
+        execute_ctrl.alu_rs1_val = ALU_RS1_OP;
+        execute_ctrl.alu_rs2_val = ALU_RS2_OP;
+        execute_ctrl.branch_op = NO_BRANCH;
+        execute_ctrl.is_jal = JAL_DISABLE;
+        execute_ctrl.is_jalr = JALR_DISABLE;
 
-        ctrl.branch_enable = BRANCH_DISABLE;
-        ctrl.is_jal = JAL_DISABLE;
-        ctrl.is_jalr = JALR_DISABLE;
+        memory_ctrl.mem_op = MEM_SKIP_OP;
+        memory_ctrl.load_op = LOAD_WORD;
+        memory_ctrl.store_op = STORE_WORD;
+
+        write_back_ctrl.reg_file_op = NO_REG_DATA;
+        write_back_ctrl.write_back_op = NO_WRITE_BACK;
 
         imm = 'b0;
 
         case (opcode)
             OPCODE_R: begin
-                ctrl.reg_file_op = WRITE_REG_DATA;
-                ctrl.alu_rs1_val = ALU_RS1_OP;
-                ctrl.alu_rs2_val = ALU_RS2_OP;
-                ctrl.mem_op = MEM_SKIP_OP;
-                ctrl.write_back_op = WRITE_BACK_OUT;
+                execute_ctrl.alu_rs1_val = ALU_RS1_OP;
+                execute_ctrl.alu_rs2_val = ALU_RS2_OP;
+                
+                write_back_ctrl.reg_file_op = WRITE_REG_DATA;
+                write_back_ctrl.write_back_op = WRITE_BACK_REG;
 
                 case ({funct7, funct3})
-                    10'b0000000_000: ctrl.alu_op = OP_ALU_ADD;
-                    10'b0100000_000: ctrl.alu_op = OP_ALU_SUB;
-                    10'b0000000_001: ctrl.alu_op = OP_ALU_SLL;
-                    10'b0000000_101: ctrl.alu_op = OP_ALU_SRL;
-                    10'b0100000_101: ctrl.alu_op = OP_ALU_SRA;
-                    10'b0000000_110: ctrl.alu_op = OP_ALU_OR;
-                    10'b0000000_111: ctrl.alu_op = OP_ALU_AND;
-                    10'b0000000_100: ctrl.alu_op = OP_ALU_XOR;
-                    10'b0000000_010: ctrl.alu_op = OP_ALU_SLT;
-                    10'b0000000_011: ctrl.alu_op = OP_ALU_SLTU;
+                    10'b0000000_000: execute_ctrl.alu_op = OP_ALU_ADD;
+                    10'b0100000_000: execute_ctrl.alu_op = OP_ALU_SUB;
+                    10'b0000000_001: execute_ctrl.alu_op = OP_ALU_SLL;
+                    10'b0000000_101: execute_ctrl.alu_op = OP_ALU_SRL;
+                    10'b0100000_101: execute_ctrl.alu_op = OP_ALU_SRA;
+                    10'b0000000_110: execute_ctrl.alu_op = OP_ALU_OR;
+                    10'b0000000_111: execute_ctrl.alu_op = OP_ALU_AND;
+                    10'b0000000_100: execute_ctrl.alu_op = OP_ALU_XOR;
+                    10'b0000000_010: execute_ctrl.alu_op = OP_ALU_SLT;
+                    10'b0000000_011: execute_ctrl.alu_op = OP_ALU_SLTU;
                     default: ; 
                 endcase
             end 
             
             OPCODE_I: begin
-                ctrl.reg_file_op = WRITE_REG_DATA;
-                ctrl.alu_rs1_val = ALU_RS1_OP;
-                ctrl.alu_rs2_val = ALU_IMM_OP;
-                ctrl.mem_op = MEM_SKIP_OP;
-                ctrl.write_back_op = WRITE_BACK_OUT;
+                execute_ctrl.alu_rs1_val = ALU_RS1_OP;
+                execute_ctrl.alu_rs2_val = ALU_IMM_OP;
+                                
+                write_back_ctrl.reg_file_op = WRITE_REG_DATA;
+                write_back_ctrl.write_back_op = WRITE_BACK_REG;
                 
                 imm = imm_i;
 
                 case (funct3)
-                    3'b000: ctrl.alu_op = OP_ALU_ADD; // ADDI
-                    3'b010: ctrl.alu_op = OP_ALU_SLT; // SLTI
-                    3'b011: ctrl.alu_op = OP_ALU_SLTU;// SLTIU
-                    3'b100: ctrl.alu_op = OP_ALU_XOR; // XORI
-                    3'b110: ctrl.alu_op = OP_ALU_OR;  // ORI
-                    3'b111: ctrl.alu_op = OP_ALU_AND; // ANDI
-                    3'b001: ctrl.alu_op = OP_ALU_SLL; // SLLI
+                    3'b000: execute_ctrl.alu_op = OP_ALU_ADD; // ADDI
+                    3'b010: execute_ctrl.alu_op = OP_ALU_SLT; // SLTI
+                    3'b011: execute_ctrl.alu_op = OP_ALU_SLTU;// SLTIU
+                    3'b100: execute_ctrl.alu_op = OP_ALU_XOR; // XORI
+                    3'b110: execute_ctrl.alu_op = OP_ALU_OR;  // ORI
+                    3'b111: execute_ctrl.alu_op = OP_ALU_AND; // ANDI
+                    3'b001: execute_ctrl.alu_op = OP_ALU_SLL; // SLLI
                     3'b101: begin
                         if (if_id_in.instruction[30] == 1'b0)
-                            ctrl.alu_op = OP_ALU_SRL; // SRLI
+                            execute_ctrl.alu_op = OP_ALU_SRL; // SRLI
                         else
-                            ctrl.alu_op = OP_ALU_SRA; // SRAI
+                            execute_ctrl.alu_op = OP_ALU_SRA; // SRAI
                     end
-                    default: ctrl.alu_op = OP_ALU_ADD;
+                    default: execute_ctrl.alu_op = OP_ALU_ADD;
                 endcase
             end
 
             OPCODE_LW: begin
-                ctrl.reg_file_op = WRITE_REG_DATA;
-                ctrl.alu_op = OP_ALU_ADD;
-                ctrl.alu_rs1_val = ALU_RS1_OP;
-                ctrl.alu_rs2_val = ALU_IMM_OP;
-                ctrl.mem_op = MEM_LOAD_OP;
-                ctrl.write_back_op = WRITE_BACK_OUT;
+                execute_ctrl.alu_op = OP_ALU_ADD;
+                execute_ctrl.alu_rs1_val = ALU_RS1_OP;
+                execute_ctrl.alu_rs2_val = ALU_IMM_OP;
+
+                memory_ctrl.mem_op = MEM_LOAD_OP;
+                
+                write_back_ctrl.reg_file_op = WRITE_REG_DATA;
+                write_back_ctrl.write_back_op = WRITE_BACK_REG;
 
                 case (funct3)
-                    3'b000: ctrl.load_op = LOAD_BYTE;
-                    3'b001: ctrl.load_op = LOAD_HBYTE;
-                    3'b010: ctrl.load_op = LOAD_WORD;
-                    3'b100: ctrl.load_op = LOAD_BYTEU;
-                    3'b101: ctrl.load_op = LOAD_HBYTEU;
+                    3'b000: memory_ctrl.load_op = LOAD_BYTE;
+                    3'b001: memory_ctrl.load_op = LOAD_HBYTE;
+                    3'b010: memory_ctrl.load_op = LOAD_WORD;
+                    3'b100: memory_ctrl.load_op = LOAD_BYTEU;
+                    3'b101: memory_ctrl.load_op = LOAD_HBYTEU;
                 endcase
 
                 imm = imm_i;
             end
 
             OPCODE_SW: begin
-                ctrl.reg_file_op = NO_REG_DATA;
-                ctrl.alu_op = OP_ALU_ADD;
-                ctrl.alu_rs1_val = ALU_RS1_OP;
-                ctrl.alu_rs2_val = ALU_IMM_OP;
-                ctrl.mem_op = MEM_STORE_OP;
-                ctrl.write_back_op = WRITE_BACK_OUT;
+                execute_ctrl.alu_op = OP_ALU_ADD;
+                execute_ctrl.alu_rs1_val = ALU_RS1_OP;
+                execute_ctrl.alu_rs2_val = ALU_IMM_OP;
+
+                memory_ctrl.mem_op = MEM_STORE_OP;
+                
+                write_back_ctrl.write_back_op = WRITE_BACK_REG;
 
                 case (funct3)
-                    3'b000: ctrl.store_op = STORE_BYTE;
-                    3'b001: ctrl.store_op = STORE_HBYTE;
-                    3'b010: ctrl.store_op = STORE_WORD;
+                    3'b000: memory_ctrl.store_op = STORE_BYTE;
+                    3'b001: memory_ctrl.store_op = STORE_HBYTE;
+                    3'b010: memory_ctrl.store_op = STORE_WORD;
                 endcase
 
                 imm = imm_s;
             end
 
             OPCODE_BRANCH: begin
-                ctrl.reg_file_op = NO_REG_DATA;
-                ctrl.branch_enable = BRANCH_ENABLE;
-                ctrl.alu_rs1_val = ALU_RS1_OP;
-                ctrl.alu_rs2_val = ALU_RS2_OP;
-                ctrl.alu_op = OP_ALU_ADD;
+                execute_ctrl.alu_rs1_val = ALU_RS1_OP;
+                execute_ctrl.alu_rs2_val = ALU_RS2_OP;
+                execute_ctrl.alu_op = OP_ALU_ADD;
 
                 imm = imm_b;
 
                 case (funct3)
-                    3'b000: ctrl.branch_op = INST_BRCH_EQ;
-                    3'b001: ctrl.branch_op = INST_BRCH_NEQ;
-                    3'b100: ctrl.branch_op = INST_BRCH_LST;
-                    3'b101: ctrl.branch_op = INST_BRCH_GTE;
-                    3'b110: ctrl.branch_op = INST_BRCH_LSTU;
-                    3'b111: ctrl.branch_op = INST_BRCH_GTEU;
-                    default: ctrl.branch_op = NO_BRANCH;
+                    3'b000: execute_ctrl.branch_op = INST_BRCH_EQ;
+                    3'b001: execute_ctrl.branch_op = INST_BRCH_NEQ;
+                    3'b100: execute_ctrl.branch_op = INST_BRCH_LST;
+                    3'b101: execute_ctrl.branch_op = INST_BRCH_GTE;
+                    3'b110: execute_ctrl.branch_op = INST_BRCH_LSTU;
+                    3'b111: execute_ctrl.branch_op = INST_BRCH_GTEU;
+                    default: execute_ctrl.branch_op = NO_BRANCH;
                 endcase
             end
 
             OPCODE_JAL: begin
-                ctrl.reg_file_op = WRITE_REG_DATA;
-                ctrl.alu_op = OP_ALU_ADD;
-                ctrl.alu_rs1_val = ALU_RS1_OP;
-                ctrl.alu_rs2_val = ALU_IMM_OP;
-                ctrl.mem_op = MEM_SKIP_OP;
-                ctrl.write_back_op = WRITE_BACK_OUT;
-                ctrl.branch_op = NO_BRANCH;
-                ctrl.branch_enable = BRANCH_DISABLE;
-                ctrl.is_jal = JAL_ENABLE;
-                ctrl.is_jalr = JALR_DISABLE;
+                execute_ctrl.alu_op = OP_ALU_ADD;
+                execute_ctrl.alu_rs1_val = ALU_RS1_OP;
+                execute_ctrl.alu_rs2_val = ALU_IMM_OP;
+                execute_ctrl.branch_op = NO_BRANCH;
+                execute_ctrl.is_jal = JAL_ENABLE;
+                execute_ctrl.is_jalr = JALR_DISABLE;
+                
+                write_back_ctrl.reg_file_op = WRITE_REG_DATA;
+                write_back_ctrl.write_back_op = WRITE_BACK_REG;
 
                 imm = imm_j;
             end
 
             OPCODE_JALR: begin
-                ctrl.reg_file_op = WRITE_REG_DATA;
-                ctrl.alu_op = OP_ALU_ADD;
-                ctrl.alu_rs1_val = ALU_RS1_OP;
-                ctrl.alu_rs2_val = ALU_IMM_OP;
-                ctrl.mem_op = MEM_SKIP_OP;
-                ctrl.write_back_op = WRITE_BACK_OUT;
-                ctrl.branch_op = NO_BRANCH;
-                ctrl.branch_enable = BRANCH_DISABLE;
-                ctrl.is_jal = JAL_DISABLE;
-                ctrl.is_jalr = JALR_ENABLE;
+                execute_ctrl.alu_op = OP_ALU_ADD;
+                execute_ctrl.alu_rs1_val = ALU_RS1_OP;
+                execute_ctrl.alu_rs2_val = ALU_IMM_OP;
+                execute_ctrl.branch_op = NO_BRANCH;
+                execute_ctrl.is_jal = JAL_DISABLE;
+                execute_ctrl.is_jalr = JALR_ENABLE;
+                
+                write_back_ctrl.reg_file_op = WRITE_REG_DATA;
+                write_back_ctrl.write_back_op = WRITE_BACK_REG;
                 
                 imm = imm_i;
             end
 
             OPCODE_LUI: begin
-                ctrl.reg_file_op = WRITE_REG_DATA;
-                ctrl.alu_rs1_val = ALU_PC_OP;
-                ctrl.alu_rs2_val = ALU_IMM_OP;
-                ctrl.alu_op = NO_ALU_OP;
-                ctrl.write_back_op = WRITE_BACK_OUT;
+                execute_ctrl.alu_rs1_val = ALU_PC_OP;
+                execute_ctrl.alu_rs2_val = ALU_IMM_OP;
+                execute_ctrl.alu_op = NO_ALU_OP;
+                
+                write_back_ctrl.reg_file_op = WRITE_REG_DATA;
+                write_back_ctrl.write_back_op = WRITE_BACK_REG;
 
                 imm = imm_u;
             end
 
             OPCODE_AUIPC: begin
-                ctrl.reg_file_op = WRITE_REG_DATA;
-                ctrl.alu_rs1_val = ALU_PC_OP;
-                ctrl.alu_rs2_val = ALU_IMM_OP;
-                ctrl.alu_op = OP_ALU_ADD;
-                ctrl.write_back_op = WRITE_BACK_OUT;
+                execute_ctrl.alu_rs1_val = ALU_PC_OP;
+                execute_ctrl.alu_rs2_val = ALU_IMM_OP;
+                execute_ctrl.alu_op = OP_ALU_ADD;
+                
+                write_back_ctrl.reg_file_op = WRITE_REG_DATA;
+                write_back_ctrl.write_back_op = WRITE_BACK_REG;
 
                 imm = imm_u;
             end
@@ -227,7 +231,9 @@ module decode_stage (
         if (reset) begin
             id_ex_out.valid <= 1'b0;
         end else if (!stall) begin
-            id_ex_out.ctrl <= ctrl;
+            id_ex_out.execute_ctrl <= execute_ctrl;
+            id_ex_out.memory_ctrl <= memory_ctrl;
+            id_ex_out.write_back_ctrl <= write_back_ctrl;
 
             id_ex_out.rs1_idx <= rs1_idx;
             id_ex_out.rs2_idx <= rs2_idx;
