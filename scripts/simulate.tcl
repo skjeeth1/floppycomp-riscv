@@ -33,8 +33,9 @@ proc run_simulation {project_name top_module tb_module} {
     puts $tb_module
     set_property top $tb_module [get_filesets sim_1]
     launch_simulation
+    add_wave *
 
-    save_wave_config $sim_dir/$tb_module.wcfg
+    # save_wave_config $sim_dir/$tb_module.wcfg
     start_gui
     
 }

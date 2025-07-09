@@ -18,18 +18,27 @@ endmodule
 
 
 module instruction_memory (
+    input clock,
     input word data_address,
     output word instruction
 );
 
     word memory [0:255];
     
-    always_comb begin : Instruction_Mem
-        instruction = memory[data_address[9:2]];
+    // always_comb begin : Instruction_Mem
+    //     instruction = memory[data_address[9:2]];
+    // end
+    always_ff @( posedge clock ) begin 
+        instruction <= memory[data_address[9:2]];
     end
 
+
     initial begin
-        $readmemh("program.hex", memory);
+        // $readmemh("program.hex", memory);
+        memory[0] = 'h0;
+        memory[1] = 'h1;
+        memory[2] = 'h2;
+        memory[3] = 'h3;
     end
     
 endmodule

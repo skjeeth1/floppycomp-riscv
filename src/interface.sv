@@ -22,4 +22,10 @@ interface id_ex_if;
 endinterface
 
 
+interface ex_mem_if;
+  
+endinterface //ex_mem_if
+
+
+
 `endif

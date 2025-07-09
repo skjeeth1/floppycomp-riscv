@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="fetch_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="\$unit_alu_tb_sv_935140899 " />
+            <top_module name="fetch_tb" />
+            <top_module name="glbl" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+   </zoom_setting>
+   <column_width_setting>
+   </column_width_setting>
+   <WVObjectSize size="7" />
+   <wvobject type="logic" fp_name="/fetch_tb/clock">
+      <obj_property name="ElementShortName">clock</obj_property>
+      <obj_property name="ObjectShortName">clock</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/fetch_tb/reset">
+      <obj_property name="ElementShortName">reset</obj_property>
+      <obj_property name="ObjectShortName">reset</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/fetch_tb/stall">
+      <obj_property name="ElementShortName">stall</obj_property>
+      <obj_property name="ObjectShortName">stall</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/fetch_tb/pc_branch">
+      <obj_property name="ElementShortName">pc_branch</obj_property>
+      <obj_property name="ObjectShortName">pc_branch</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/fetch_tb/inst_data_from_memory">
+      <obj_property name="ElementShortName">inst_data_from_memory[31:0]</obj_property>
+      <obj_property name="ObjectShortName">inst_data_from_memory[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/fetch_tb/jump_address">
+      <obj_property name="ElementShortName">jump_address[31:0]</obj_property>
+      <obj_property name="ObjectShortName">jump_address[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/fetch_tb/instruction_address">
+      <obj_property name="ElementShortName">instruction_address[31:0]</obj_property>
+      <obj_property name="ObjectShortName">instruction_address[31:0]</obj_property>
+   </wvobject>
+</wave_config>
