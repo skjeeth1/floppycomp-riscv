@@ -54,14 +54,35 @@ endinterface
 
 
 interface ex_mem_if;
-  control_signals_t ctrl; 
-  reg_index rd_idx;
-  word execute_out;
-  memory_op_t mem_op;
-  load_op_t load_op;
-  store_op_t store_op;
+  // Control Signals
+  memory_ctrl_t memory_ctrl;
+  write_back_ctrl_t write_back_ctrl;
 
-endinterface //ex_mem_if
+  word execute_out;
+  word reg_data;
+  reg_index rd_idx;
+  
+  logic valid;
+
+  modport master (
+    output memory_ctrl,
+    output write_back_ctrl,
+    output execute_out,
+    output reg_data,
+    output rd_idx,
+    output valid
+  );
+
+  modport slave (
+    input memory_ctrl,
+    input write_back_ctrl,
+    input execute_out,
+    input reg_data,
+    input rd_idx,
+    input valid
+  );
+
+endinterface : ex_mem_if
 
 
 

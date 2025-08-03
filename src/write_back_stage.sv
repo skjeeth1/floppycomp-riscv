@@ -19,7 +19,7 @@ module write_back_stage (
                 reg_op = WRITE_REG_DATA;
                 reg_write_data = pc_4;
             end
-            WRITE_BACK_OUT: begin
+            WRITE_BACK_REG: begin
                 reg_op = WRITE_REG_DATA;
                 reg_write_data = memory_out;
             end

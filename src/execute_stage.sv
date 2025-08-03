@@ -1,58 +1,76 @@
 `include "params.sv"
+`include "interface.sv"
 
 module execute_stage (
-    input word rs1, rs2, imm, pc, pc_4,
+    input logic clock,
+    input logic reset,
+    input logic stall,
 
-    input alu_rs1_t alu_rs1,
-    input alu_rs2_t alu_rs2,
-    input alu_op_t alu_op_code,
-
-    input branch_op_t branch_op,
-
-    input jal_op_t jal_op,
-    input jalr_op_t jalr_op,
-
-    output word memory_out,
+    id_ex_if.slave id_ex_in,
+    ex_mem_if.master ex_mem_out,
 
     output branch_en_t branch_scs,
     output word branch_add_out
-
 );
 
     word alu_out;
     word branch_out;
     
     alu_unit ALU1 (
-        .op1(rs1),
-        .op2(rs2),
-        .imm(imm),
-        .pc_val(pc),
-        .alu_rs1(alu_rs1),
-        .alu_rs2(alu_rs2),
-        .alu_op_code(alu_op_code),
+        .valid(id_ex_in.valid),
+        .op1(id_ex_in.rs1_val),
+        .op2(id_ex_in.rs2_val),
+        .imm(id_ex_in.imm),
+        .pc_val(id_ex_in.pc),
+        .alu_rs1(id_ex_in.execute_ctrl.alu_rs1),
+        .alu_rs2(id_ex_in.execute_ctrl.alu_rs2),
+        .alu_op_code(id_ex_in.execute_ctrl.alu_op),
         .out(alu_out)
     );
 
     branch_unit BRU1 (
-        .rs1(rs1),
-        .rs2(rs2),
-        .offset(imm),
-        .pc(pc),
-        .branch_op(branch_op),
+        .valid(id_ex_in.valid),
+        .rs1(id_ex_in.rs1_val),
+        .rs2(id_ex_in.rs2_val),
+        .offset(id_ex_in.imm),
+        .pc(id_ex_in.pc),
+        .branch_op(id_ex_in.execute_ctrl.branch_op),
         .branch_scs(branch_scs),
         .branch_address(branch_out)
     );
 
-    always_comb begin : Jump_Logic
-        memory_out = alu_out;
-        branch_add_out = branch_out;
+    // always_comb begin : Jump_Logic
+    //     memory_out = alu_out;
+    //     branch_add_out = branch_out;
 
-        if (jal_op == JAL_ENABLE) begin
-            memory_out = pc_4;
-            branch_add_out = pc + imm;
-        end else if (jalr_op == JALR_ENABLE) begin
-            memory_out = pc_4;
-            branch_add_out = (rs1 + imm) & ~32'd1;
+    //     if (jal_op == JAL_ENABLE) begin
+    //         memory_out = pc_4;
+    //         branch_add_out = pc + imm;
+    //     end else if (jalr_op == JALR_ENABLE) begin
+    //         memory_out = pc_4;
+    //         branch_add_out = (rs1 + imm) & ~32'd1;
+    //     end
+    // end
+
+    always_ff @( posedge clock ) begin
+        if (reset)
+            ex_mem_out.valid <= 'b0;
+        else if (!stall) begin
+            if (id_ex_in.valid) begin
+                ex_mem_out.memory_ctrl <= id_ex_in.memory_ctrl;
+                ex_mem_out.write_back_ctrl <= id_ex_in.write_back_ctrl;
+                ex_mem_out.execute_out <= (id_ex_in.execute_ctrl.is_jal == JAL_ENABLE || id_ex_in.execute_ctrl.is_jalr == JALR_ENABLE) ? id_ex_in.pc_plus4 : alu_out;
+                ex_mem_out.reg_data <= id_ex_in.rs2_val;
+                ex_mem_out.rd_idx <= id_ex_in.rd_idx;
+                ex_mem_out.valid <= 1'b1;
+            end else begin
+                ex_mem_out.memory_ctrl <= '0;
+                ex_mem_out.write_back_ctrl <= '0;
+                ex_mem_out.execute_out <= '0;
+                ex_mem_out.reg_data <= '0;
+                ex_mem_out.rd_idx <= '0;
+                ex_mem_out.valid <= 1'b0;
+            end
         end
     end
     

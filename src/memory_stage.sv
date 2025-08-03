@@ -14,7 +14,7 @@ module memory_stage (
 
     word data_ram_out;
 
-    always_comb begin : Assign_Data
+    always_comb begin 
         mem_sig.mem_enable = 'b0;
         mem_sig.mem_en = MEM_READ_EN;
         mem_sig.data_in = 'b0;
