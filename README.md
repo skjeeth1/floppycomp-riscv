@@ -1,6 +1,8 @@
-# FloppyComp-V1: A Simple Single-Cycle RISC-V CPU
+# FloppyComp-V1: A Simple RISC-V CPU
 
 Welcome to **FloppyComp-V1**, a non-pipelined Single-Cycle RISC-V CPU designed for learning, experimentation, and extension. This project is written in SystemVerilog and is organized for clarity, modularity, and ease of simulation using Vivado.
+
+To find the developmental branch of the 5-stage pipeline, visit the "pipelined" branch
 
 ---
 
@@ -72,32 +74,32 @@ All control signals are generated in the decode stage and propagated through the
 
 1. Open Vivado.
 2. Source the desired script in the TCL console:
-3. ```source simulate.tcl```
-4. ```run_simulation <proj_name> <top_module_name> <tb_module_name>```
+3. `source simulate.tcl`
+4. `run_simulation <proj_name> <top_module_name> <tb_module_name>`
 5. To clean up:
-6. ```source clear_dir.tcl```
+6. `source clear_dir.tcl`
 
 ---
 
 ## To-Do List
 
 - [ ] **Create a testbench for the top module**  
-  Develop a comprehensive testbench to verify the integration of CPU, memory, and peripherals at the SoC level.
+      Develop a comprehensive testbench to verify the integration of CPU, memory, and peripherals at the SoC level.
 
 - [ ] **Expand `cpu_tb.sv`**  
-  Add more instruction types, edge cases, and automated self-checking to the CPU testbench for thorough verification.
+      Add more instruction types, edge cases, and automated self-checking to the CPU testbench for thorough verification.
 
 - [ ] **Add more programs like `program.hex`**  
-  Write and include additional RISC-V programs to test various instruction sequences and features.
+      Write and include additional RISC-V programs to test various instruction sequences and features.
 
 - [ ] **Add functionality for CSRs and their instructions**  
-  Implement Control and Status Registers (CSRs) and support for CSR-related RISC-V instructions.
+      Implement Control and Status Registers (CSRs) and support for CSR-related RISC-V instructions.
 
 - [ ] **Add functionality for privilege modes**  
-  Extend the CPU to support RISC-V privilege levels (user, supervisor, machine) and related control logic.
+      Extend the CPU to support RISC-V privilege levels (user, supervisor, machine) and related control logic.
 
 - [ ] **Branch project for multi-cycle and pipelined CPU**  
-  Start a new branch to design and implement multi-cycle and pipelined versions of the CPU for performance comparison and learning.
+      Start a new branch to design and implement multi-cycle and pipelined versions of the CPU for performance comparison and learning.
 
 ---
 
